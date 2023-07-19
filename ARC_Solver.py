@@ -17,6 +17,7 @@ ARC_Grid = list[Color]
 ARC_Object = dict[int, int, ARC_Grid]
 ARC_Pair = tuple[ARC_Grid, ARC_Grid]
 
+# Parses an ARC json file and extracts the puzzle into a dict
 class ARC_Test:
     demonstrations : list [ARC_Pair]
     tests : list[ARC_Pair]

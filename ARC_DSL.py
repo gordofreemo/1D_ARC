@@ -1,3 +1,4 @@
+import random, functools
 from typing import Callable, overload
 from enum import Enum
 from ARC_Solver import ARC_Test, Color, ARC_Grid, ARC_Object
@@ -9,7 +10,7 @@ class Abstract_Grid:
     grid : ARC_Grid
     def __init__(self, grid : ARC_Grid) -> None:
         self.grid = grid
-
+    # ARC grid measure function
     def dist_measure(self, grid : ARC_Grid) -> int:
       total_metric = 0
       x = min(len(self.grid), len(grid))
@@ -40,6 +41,7 @@ class Abstract_Grid:
             objects.append(curr_object)
         return objects
 
+# Grid operations form a DSL which operate on ARC_Grids and return ARC_Grids
 class Grid_Operations:
   Operation = Callable[[ARC_Grid], ARC_Grid]
   @overload
@@ -52,11 +54,21 @@ class Grid_Operations:
       if isinstance(obj, Color):
         return (lambda grid : [(x if x != obj else clr) for x in grid])
       else:
-        return (lambda grid : grid[0:obj['start']] + [clr for x in grid[obj['start']:obj['end']]] + grid[obj['end']:])
+        return (lambda grid : grid[0:obj['start']] + ((obj['start']-obj['end'])*[clr]) + grid[obj['end']:])
+  def iden() -> Operation:
+    return id
   def compose(op1 : Operation, op2 : Operation) -> Operation:
     return (lambda grid : op2(op1(grid)))
 
+# Implements a silly random search across the state space
+def trivial_search(puzzle : ARC_Test):
+  demon = puzzle.demonstrations
+  inputs = [x[0] for x in demon]
+  outputs = [x[1] for x in demon]
+  op = Grid_Operations.iden 
 
+  
+  
 ### TESTING ###
 ARC : ARC_Test = ARC_Test('./1D_Corpus/Center/Center1.json')
 grid : Abstract_Grid = Abstract_Grid(ARC.demonstrations[0])

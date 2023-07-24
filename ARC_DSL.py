@@ -1,5 +1,5 @@
 import random, functools,  math
-from queue import PriorityQueue
+from PriorityQueue import Priority_Queue
 from typing import Callable, overload
 from enum import Enum
 from ARC_Solver import ARC_Test, Color, ARC_Grid, ARC_Object
@@ -81,20 +81,19 @@ def A_Star(test : ARC_Test) -> tuple[Grid_Operations.Operation, str]:
   all_ops = Grid_Operations.generate_all(test)
 
   # (Operation Chain, String_Chain, Length) prioritized by heuristic+length
-  q = PriorityQueue()
-  q.put((math.inf, (Grid_Operations.iden(),'IDEN|',0)))
+  q = Priority_Queue()
+  q.insert(math.inf, (Grid_Operations.iden(), 'IDEN|',0))
 
   #heapq.heappush(frontier, (math.inf, 1, (Grid_Operations.iden(),'IDEN|',0)))
-  while not q.empty():
-    (_, (curr_op, curr_string, path_len)) = q.get()
+  while (not q.is_empty()):
+    (_, (curr_op, curr_string, path_len)) = q.extract_min()
     #heapq.heappop(frontier)
     for (op, string) in all_ops:
       new_op = Grid_Operations.compose(curr_op, op)
       measure = sum([ Abstract_Grid.dist_measure(new_op(x), y) for (x,y) in test.demonstrations])
-      print(measure)
       if measure == 0:
         return (new_op, curr_string + string)
-      q.put((measure+path_len+1, (new_op, curr_string + string, path_len+1)))
+      q.insert(measure+path_len+1, (new_op, curr_string + string, path_len+1))
       #heapq.heappush(frontier, (measure+path_len+1, 1, (new_op, curr_string + string, path_len+1)))
        
 
@@ -104,4 +103,6 @@ ARC : ARC_Test = ARC_Test('./1D_Corpus/Recolor/Recolor1.json')
 grid : Abstract_Grid = Abstract_Grid(ARC.demonstrations[0][0])
 grid.get_connected_objects()
 # print((Grid_Operations.recolor(Color.ORANGE, Color.GREEN))(grid.grid))
-print(A_Star(ARC))
+(op, string) = A_Star(ARC)
+for (x,y) in ARC.tests:
+  print(Abstract_Grid.dist_measure(op(x),y))
